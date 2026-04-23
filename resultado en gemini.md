@@ -1,133 +1,197 @@
-¡Hola! Como desarrollador senior, me encanta ver este tipo de estructuras. Vamos a construir **crudpchop**, un sistema sólido utilizando **Flutter**, **Firebase** y el patrón de diseño **Antigravity** (una arquitectura orientada a la separación de responsabilidades y estados limpios).
-
-Aquí tienes el plan de trabajo detallado y la implementación técnica.
+¡Hola! Entendido. Como creador de software, he diseñado este plan de trabajo estructurado para que tus estudiantes no solo aprendan a programar, sino a orquestar un proyecto profesional utilizando **Flutter**, **Firebase** y la metodología de **Antigravity**.
 
 ---
 
-## 1. Configuración del Entorno y Estructura
-Primero, establecemos la jerarquía de archivos solicitada para mantener el orden del proyecto.
+## 1. Configuración de Entorno y Proyecto
+Primero, establecemos la jerarquía de carpetas solicitada.
 
-* **Ruta:** `xflutterhernandez1128/crudpchop`
-
-```bash
-# Comandos de terminal
-mkdir xflutterhernandez1128
-cd xflutterhernandez1128
-flutter create crudpchop
-cd crudpchop
-```
+* **Comandos en terminal:**
+    ```bash
+    mkdir xflutterhernandez1128
+    cd xflutterhernandez1128
+    flutter create crudpchop
+    cd crudpchop
+    ```
 
 ---
 
-## 2. Configuración de Firebase (Firestore)
+## 2. Metodología Antigravity: Agentes y Roles
+En este proyecto, implementaremos **Antigravity** como un enfoque de arquitectura limpia donde cada "Agente" (clase/módulo) tiene un rol y habilidades específicas.
+
+### Estructura de Trabajo (Agentes)
+| Agente | Rol | Skill (Habilidad) |
+| :--- | :--- | :--- |
+| **Data Agent** | Repositorio | Comunicación directa con Firestore. |
+| **Logic Agent** | Controlador | Gestión del estado y validación de datos. |
+| **UI Agent** | Vista | Renderizado de widgets con colores atractivos. |
+
+---
+
+## 3. Configuración de Firebase Firestore
 1.  Ve a [Firebase Console](https://console.firebase.google.com/).
-2.  Crea un proyecto llamado **crudpchop**.
+2.  Crea un proyecto llamado `crudpchop`.
 3.  En el menú lateral, selecciona **Firestore Database** y haz clic en **Crear base de datos**.
 4.  Crea una colección llamada `computadoras`.
-5.  Agrega un documento inicial con los campos:
-    * `nombre`: (String)
-    * `precio`: (Number)
-    * `stock`: (Number)
+5.  Añade un documento de prueba con los campos: `nombre` (string), `precio` (number) y `stock` (number).
 
 ---
 
-## 3. Integración de Librerías y `pubspec.yaml`
-Para implementar este proyecto, necesitamos las dependencias oficiales de Firebase y herramientas de gestión de estado/diseño.
-
-### Modificación del archivo `pubspec.yaml`
-Añade lo siguiente bajo la sección `dependencies`:
+## 4 y 5. Integración de Librerías (pubspec.yaml)
+Para que Firebase funcione, debemos añadir las dependencias. El archivo `pubspec.yaml` debe quedar así:
 
 ```yaml
 dependencies:
   flutter:
     sdk: flutter
-  # Core de Firebase
-  firebase_core: ^3.0.0 
-  # Base de datos Firestore
-  cloud_firestore: ^5.0.0
-  # Diseño y UI
-  google_fonts: ^6.2.1
+  firebase_core: ^3.0.0      # Agente de conexión principal
+  cloud_firestore: ^5.0.0    # Agente de base de datos
+  cupertino_icons: ^1.0.6
 ```
-> **Nota:** Después de guardar, ejecuta `flutter pub get` en tu terminal para descargar los paquetes.
+*Para instalar, ejecuta `flutter pub get` en la terminal.*
 
 ---
 
-## 4. Implementación del CRUD (Modelo y Servicios)
-Siguiendo la metodología de **Antigravity**, dividiremos el código por responsabilidades: **Agentes (Lógica)**, **Roles (Modelos)** y **Skills (Servicios de Firebase)**.
+## 6 y 8. Implementación del CRUD: Código Funcional
+Aquí tienes la estructura de archivos propuesta bajo la lógica de **Flujo de Trabajo Antigravity**.
 
-### Estructura de Carpetas Recomendada
+### Estructura de Carpetas
 ```text
-lib/
-├── agents/          # Controladores de lógica
-├── roles/           # Modelos de datos (Entity)
-├── skills/          # Servicios (Conexión a Firebase)
-├── ui/              # Widgets y pantallas
-└── main.dart        # Punto de entrada
+crudpchop/
+├── lib/
+│   ├── agents/
+│   │   ├── data_agent.dart    (Conexión Firestore)
+│   │   └── logic_agent.dart   (Lógica de negocio)
+│   ├── ui/
+│   │   └── home_screen.dart   (Interfaz Visual)
+│   └── main.dart              (Punto de entrada)
 ```
 
-### A. El Rol (Modelo de Datos): `lib/roles/computadora_role.dart`
+#### A. Agente de Datos (`lib/agents/data_agent.dart`)
+Este agente se encarga exclusivamente de las operaciones CRUD.
+
 ```dart
-class ComputadoraRole {
-  String? id;
-  String nombre;
-  double precio;
-  int stock;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  ComputadoraRole({this.id, required this.nombre, required this.precio, required this.stock});
+class DataAgent {
+  final CollectionReference _collection = 
+      FirebaseFirestore.instance.collection('computadoras');
 
-  // Convertir Firestore a Objeto
-  factory ComputadoraRole.fromFirestore(Map<String, dynamic> data, String id) {
-    return ComputadoraRole(
-      id: id,
-      nombre: data['nombre'] ?? '',
-      precio: (data['precio'] ?? 0).toDouble(),
-      stock: data['stock'] ?? 0,
+  // CREATE
+  Future<void> addPC(String n, double p, int s) => 
+      _collection.add({'nombre': n, 'precio': p, 'stock': s});
+
+  // READ (Stream)
+  Stream<QuerySnapshot> getPCStream() => _collection.snapshots();
+
+  // UPDATE
+  Future<void> updatePC(String id, String n, double p, int s) =>
+      _collection.doc(id).update({'nombre': n, 'precio': p, 'stock': s});
+
+  // DELETE
+  Future<void> deletePC(String id) => _collection.doc(id).delete();
+}
+```
+
+#### B. Agente de Interfaz (`lib/ui/home_screen.dart`)
+Utilizaremos colores vibrantes (Indigo y Amber) para una UI atractiva.
+
+```dart
+import 'package:flutter/material.dart';
+import '../agents/data_agent.dart';
+
+class HomeScreen extends StatelessWidget {
+  final DataAgent _agent = DataAgent();
+  final TextEditingController _nameCtrl = TextEditingController();
+  final TextEditingController _priceCtrl = TextEditingController();
+  final TextEditingController _stockCtrl = TextEditingController();
+
+  void _showForm(BuildContext context, {String? id}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.grey[50],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: _nameCtrl, decoration: InputDecoration(labelText: 'Nombre PC', prefixIcon: Icon(Icons.computer, color: Colors.indigo))),
+            TextField(controller: _priceCtrl, decoration: InputDecoration(labelText: 'Precio', prefixIcon: Icon(Icons.attach_money, color: Colors.green)), keyboardType: TextInputType.number),
+            TextField(controller: _stockCtrl, decoration: InputDecoration(labelText: 'Stock', prefixIcon: Icon(Icons.inventory, color: Colors.amber)), keyboardType: TextInputType.number),
+            SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+              onPressed: () {
+                if (id == null) {
+                  _agent.addPC(_nameCtrl.text, double.parse(_priceCtrl.text), int.parse(_stockCtrl.text));
+                } else {
+                  _agent.updatePC(id, _nameCtrl.text, double.parse(_priceCtrl.text), int.parse(_stockCtrl.text));
+                }
+                Navigator.pop(context);
+              },
+              child: Text(id == null ? 'Agregar Computadora' : 'Actualizar Datos'),
+            )
+          ],
+        ),
+      ),
     );
   }
 
-  // Convertir Objeto a Map para Firebase
-  Map<String, dynamic> toMap() {
-    return {
-      'nombre': nombre,
-      'precio': precio,
-      'stock': stock,
-    };
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('CRUD PCHOP - Antigravity'), backgroundColor: Colors.indigo),
+      body: StreamBuilder(
+        stream: _agent.getPCStream(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+          return ListView(
+            children: snapshot.data!.docs.map((doc) {
+              return Card(
+                elevation: 4, margin: EdgeInsets.all(8),
+                child: ListTile(
+                  leading: CircleAvatar(backgroundColor: Colors.amber, child: Icon(Icons.laptop, color: Colors.black)),
+                  title: Text(doc['nombre'], style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('Precio: \$${doc['precio']} | Stock: ${doc['stock']}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(icon: Icon(Icons.edit, color: Colors.blue), onPressed: () => _showForm(context, id: doc.id)),
+                      IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => _agent.deletePC(doc.id)),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.indigo,
+        onPressed: () => _showForm(context),
+        child: Icon(Icons.add, color: Colors.white),
+      ),
+    );
   }
-}
-```
-
-### B. El Skill (Servicio Firestore): `lib/skills/firebase_skill.dart`
-```dart
-import 'cloud_firestore/cloud_firestore.dart';
-import '../roles/computadora_role.dart';
-
-class FirebaseSkill {
-  final CollectionReference _db = FirebaseFirestore.instance.collection('computadoras');
-
-  // CREATE
-  Future<void> addComputadora(ComputadoraRole comp) => _db.add(comp.toMap());
-
-  // READ (Stream para tiempo real)
-  Stream<List<ComputadoraRole>> getComputadoras() {
-    return _db.snapshots().map((snapshot) => snapshot.docs
-        .map((doc) => ComputadoraRole.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
-        .toList());
-  }
-
-  // UPDATE
-  Future<void> updateComputadora(ComputadoraRole comp) => _db.doc(comp.id).update(comp.toMap());
-
-  // DELETE
-  Future<void> deleteComputadora(String id) => _db.doc(id).delete();
 }
 ```
 
 ---
 
-## 5. UI y Flujo de Trabajo (Agentes y Vistas)
-Para que sea visualmente atractivo, utilizaremos colores vibrantes como **Deep Purple** y **Amber**.
+## 7. Guía Práctica para Estudiantes (Profundización)
 
-### `lib/main.dart` (Inicialización)
+Para que tus alumnos comprendan el **Flujo Antigravity**, pídeles que visualicen el sistema como una cadena de mando:
+
+1.  **Activación:** El usuario presiona un botón (UI Agent).
+2.  **Solicitud:** La UI no borra datos sola; le pide al **Data Agent** que realice la acción.
+3.  **Respuesta:** Firestore cambia, el Stream detecta el cambio y el Agente de UI se actualiza automáticamente.
+
+> **Reto para el estudiante:** Agreguen un nuevo campo llamado "Marca" en Firestore y modifiquen el `DataAgent` y el formulario en la UI para soportar este nuevo dato.
+
+
+
+### Inicialización Final (`lib/main.dart`)
 ```dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -135,139 +199,11 @@ import 'ui/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Inicializa Firebase
-  runApp(const CrudPChopApp());
-}
-
-class CrudPChopApp extends StatelessWidget {
-  const CrudPChopApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'CRUD PChop',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, secondary: Colors.amber),
-      ),
-      home: const HomeScreen(),
-    );
-  }
+  await Firebase.initializeApp(); // Inicialización de Firebase
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(primarySwatch: Colors.indigo),
+    home: HomeScreen(),
+  ));
 }
 ```
-
-### `lib/ui/home_screen.dart` (La Interfaz del Estudiante)
-```dart
-import 'package:flutter/material.dart';
-import '../skills/firebase_skill.dart';
-import '../roles/computadora_role.dart';
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final FirebaseSkill _skill = FirebaseSkill();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("PChop Inventory", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: StreamBuilder<List<ComputadoraRole>>(
-        stream: _skill.getComputadoras(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          
-          final computadoras = snapshot.data!;
-          return ListView.builder(
-            itemCount: computadoras.length,
-            itemBuilder: (context, index) {
-              final item = computadoras[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                elevation: 4,
-                child: ListTile(
-                  leading: const CircleAvatar(backgroundColor: Colors.amber, child: Icon(Icons.computer)),
-                  title: Text(item.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text("Precio: \$${item.precio} | Stock: ${item.stock}"),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _showForm(context, item)),
-                      IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _skill.deleteComputadora(item.id!)),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.amber,
-        onPressed: () => _showForm(context, null),
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  // Modal para Crear y Editar
-  void _showForm(BuildContext context, ComputadoraRole? comp) {
-    final nombreController = TextEditingController(text: comp?.nombre ?? '');
-    final precioController = TextEditingController(text: comp?.precio.toString() ?? '');
-    final stockController = TextEditingController(text: comp?.stock.toString() ?? '');
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 20, left: 20, right: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nombreController, decoration: const InputDecoration(labelText: 'Nombre')),
-            TextField(controller: precioController, decoration: const InputDecoration(labelText: 'Precio'), keyboardType: TextInputType.number),
-            TextField(controller: stockController, decoration: const InputDecoration(labelText: 'Stock'), keyboardType: TextInputType.number),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple, foregroundColor: Colors.white),
-              onPressed: () {
-                final newComp = ComputadoraRole(
-                  id: comp?.id,
-                  nombre: nombreController.text,
-                  precio: double.parse(precioController.text),
-                  stock: int.parse(stockController.text),
-                );
-                comp == null ? FirebaseSkill().addComputadora(newComp) : FirebaseSkill().updateComputadora(newComp);
-                Navigator.pop(context);
-              },
-              child: Text(comp == null ? "Crear" : "Actualizar"),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
----
-
-## 6. Metodología de Práctica Guiada (Antigravity)
-
-Para los estudiantes, explicamos el flujo de trabajo de la siguiente manera:
-
-1.  **El Rol (Datos):** Es el molde de lo que queremos representar (la Computadora). Define qué datos viajan.
-2.  **El Skill (Habilidad):** Es la capacidad de hablar con el mundo exterior (Firebase). No decide qué guardar, solo sabe *cómo* hacerlo.
-3.  **El Agente (Lógica/UI):** Es el intermediario. Cuando el estudiante presiona un botón (UI), el agente toma la información, valida que el precio sea un número y le pide al **Skill** que lo guarde usando el formato del **Rol**.
-
-### Flujo de Trabajo
-* **Paso 1:** Configura Firebase y descarga los `google-services.json`.
-* **Paso 2:** Define tu **Rol** (Model).
-* **Paso 3:** Crea el **Skill** para conectar los métodos `get`, `add`, `update`, `delete`.
-* **Paso 4:** Diseña la **UI** conectando los `TextControllers` con las funciones del Skill.
-
-Este código es **totalmente funcional**. Asegúrate de haber configurado el archivo `google-services.json` (Android) o `GoogleService-Info.plist` (iOS) en las carpetas nativas correspondientes para que la conexión con Firebase Console sea exitosa.
